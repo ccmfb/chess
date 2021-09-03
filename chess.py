@@ -17,27 +17,45 @@ class Game:
 		self.create_pieces()
 
 	def create_pieces(self):
+		
+		# General Lists
 		self.all_pieces = []
 		self.all_white_pieces = []
 		self.all_black_pieces = []
 
-		# White
+		# ------ White Pieces ------
 		self.white_pawns = [
 			pi.Pawn(self.set_pos(x, 1), 'w') for x in range(8)
 			]
 		self.white_rocks = [pi.Rock(self.set_pos(0, 0), 'w'), pi.Rock(self.set_pos(7,0), 'w')]
+		self.white_knights = [pi.Knight(self.set_pos(1,0), 'w'), pi.Knight(self.set_pos(6,0), 'w')]
+		self.white_bishops = [pi.Bishop(self.set_pos(2,0), 'w'), pi.Bishop(self.set_pos(5,0), 'w')]
+		self.white_queen = [pi.Queen(self.set_pos(3,0), 'w')]
+		self.white_king = [pi.King(self.set_pos(4,0), 'w')]
 
 		self.all_white_pieces.append(self.white_pawns)
 		self.all_white_pieces.append(self.white_rocks)
+		self.all_white_pieces.append(self.white_knights)
+		self.all_white_pieces.append(self.white_bishops)
+		self.all_white_pieces.append(self.white_queen)
+		self.all_white_pieces.append(self.white_king)
 
-		# Black
+		# ------ Black Pieces ------
 		self.black_pawns = [
 			pi.Pawn(self.set_pos(x, 6), 'b') for x in range(8)
 			]
 		self.black_rocks = [pi.Rock(self.set_pos(0,7), 'b'), pi.Rock(self.set_pos(7,7), 'b')]
+		self.black_knights = [pi.Knight(self.set_pos(1,7), 'b'), pi.Knight(self.set_pos(6,7), 'b')]
+		self.black_bishops = [pi.Bishop(self.set_pos(2,7), 'b'), pi.Bishop(self.set_pos(5,7), 'b')]
+		self.black_queen = [pi.Queen(self.set_pos(3,7), 'b')]
+		self.black_king = [pi.King(self.set_pos(4,7), 'b')]
 
 		self.all_black_pieces.append(self.black_pawns)
 		self.all_black_pieces.append(self.black_rocks)
+		self.all_black_pieces.append(self.black_knights)
+		self.all_black_pieces.append(self.black_bishops)
+		self.all_black_pieces.append(self.black_queen)
+		self.all_black_pieces.append(self.black_king)
 
 		# Complete list of every piece
 		self.all_pieces.append(self.all_white_pieces)
