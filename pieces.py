@@ -20,16 +20,7 @@ class Piece:
 	def move(self, all_white, all_black, to_x, to_y):	
 		self.piece_rect.x = to_x
 		self.piece_rect.y = to_y
-
-		self.move_rects = []
-		for mov in self.moves:
-			if self.piece_rect.x + mov[0] + 15 >= 80 and self.piece_rect.x + mov[0] + 15 <= 500:
-				if self.piece_rect.y + mov[1] + 15 >= 90 and self.piece_rect.y + mov[1] + 15 <= 510:
-					for lis in all_white:
-						for piece in lis:
-							if self.piece_rect.x + mov[0] != piece.piece_rect.x and self.piece_rect.y + mov[1] != piece.piece_rect.y:
-								self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
-
+		
 	def draw(self, screen):
 		pygame.draw.rect(screen, self.colour_rgb, self.piece_rect)
 
@@ -46,10 +37,22 @@ class Pawn(Piece):
 		elif colour == 'b':
 			self.moves.append((0,-60))
 
-		'''
+	def update_moves(self, all_pieces):
+		self.move_rects = []
+		self.x_bound_left = 80
+		self.x_bound_right = 500
+		self.y_bound_top = 90
+		self.y_bound_bottom = 510
+
 		for mov in self.moves:
-			self.move_rects.append(pygame.Rect(position[0] + mov[0] - 15, position[1] + mov[1] - 15, 30, 30))
-		'''
+			if self.piece_rect.x + mov[0] + 15 >= 80 and self.piece_rect.x + mov[0] + 15 <= 500:
+				if self.piece_rect.y + mov[1] + 15 >= 90 and self.piece_rect.y + mov[1] + 15 <= 510:
+					for lis in all_pieces[0]:
+						for piece in lis:
+							if self.piece_rect.x + mov[0] != piece.piece_rect.x and self.piece_rect.y + mov[1] != piece.piece_rect.y:
+								self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
+
+
 
 class Rock(Piece):
 	def __init__(self, position, colour):
@@ -82,10 +85,6 @@ class Rock(Piece):
 
 					# Append possible moves
 					self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
-
-	def move(self, all_white, all_black, to_x, to_y):
-		self.piece_rect.x = to_x
-		self.piece_rect.y = to_y
 
 	def find_x_bound_left(self, all_white, all_black):
 		if self.colour == 'w':
@@ -163,3 +162,70 @@ class Rock(Piece):
 						if self.piece_rect.y < piece.piece_rect.y:
 							self.y_bound_bottom = piece.piece_rect.y + 15
 
+class Knight(Piece):
+	def __init__(self, position, colour):
+		super().__init__(position, colour)
+
+		self.moves.append((60, -120))
+		self.moves.append((120, -60))
+		self.moves.append((120, 60))
+		self.moves.append((60, 120))
+		self.moves.append((-60, 120))
+		self.moves.append((-120, 60))
+		self.moves.append((-120, -60))
+		self.moves.append((-60, -120))
+
+	def update_moves(self, all_pieces):
+		self.move_rects = []
+		for mov in self.moves:
+			self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
+
+class Bishop(Piece):
+	def __init__(self, position, colour):
+		super().__init__(position, colour)
+
+		for i in range(7):
+			self.moves.append((60*(i+1),60*(i+1)))
+			self.moves.append((-60*(i+1),60*(i+1)))
+			self.moves.append((60*(i+1),-60*(i+1)))
+			self.moves.append((-60*(i+1),-60*(i+1)))
+
+	def update_moves(self, all_pieces):
+		self.move_rects = []
+		for mov in self.moves:
+			self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
+
+class Queen(Piece):
+	def __init__(self, position, colour):
+		super().__init__(position, colour)
+
+		for i in range(7):
+			self.moves.append((60*(i+1),60*(i+1)))
+			self.moves.append((-60*(i+1),60*(i+1)))
+			self.moves.append((60*(i+1),-60*(i+1)))
+			self.moves.append((-60*(i+1),-60*(i+1)))
+
+		for i in range(7):
+			self.moves.append((60 * (i+1), 0))
+			self.moves.append((-60 * (i+1), 0))
+			self.moves.append((0, 60 * (i+1)))
+			self.moves.append((0, -60 * (i+1)))
+
+	def update_moves(self, all_pieces):
+		self.move_rects = []
+		for mov in self.moves:
+			self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
+
+class King(Piece):
+	def __init__(self, position, colour):
+		super().__init__(position, colour)
+
+		self.moves.append((60,0))
+		self.moves.append((-60,0))
+		self.moves.append((0,60))
+		self.moves.append((0,-60))
+
+	def update_moves(self, all_pieces):
+		self.move_rects = []
+		for mov in self.moves:
+			self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
