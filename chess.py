@@ -8,20 +8,19 @@ BOARD_LIGHT = (221, 184, 146)
 class Game:
 	def __init__(self):
 		pygame.init()
+		pygame.font.init()
 		pygame.display.set_caption('Chess')
 		self.screen = pygame.display.set_mode((800, 600))
 		self.clock = pygame.time.Clock()
 
-		self.board_pos = [[(80 + (x * 60), 90 + (y * 60)) for x in range(8)] for y in range(8)]
+		self.board_pos = [[(30 + (x * 60), 30 + (y * 60)) for x in range(8)] for y in range(8)]
 
 		self.create_pieces()
 
 	def create_pieces(self):
 		
-		# General Lists
-		self.all_pieces = []
-		self.all_white_pieces = []
-		self.all_black_pieces = []
+		# General List     W   B
+		self.all_pieces = [[],[]]
 
 		# ------ White Pieces ------
 		self.white_pawns = [
@@ -33,12 +32,12 @@ class Game:
 		self.white_queen = [pi.Queen(self.set_pos(3,0), 'w')]
 		self.white_king = [pi.King(self.set_pos(4,0), 'w')]
 
-		self.all_white_pieces.append(self.white_pawns)
-		self.all_white_pieces.append(self.white_rocks)
-		self.all_white_pieces.append(self.white_knights)
-		self.all_white_pieces.append(self.white_bishops)
-		self.all_white_pieces.append(self.white_queen)
-		self.all_white_pieces.append(self.white_king)
+		self.all_pieces[0].append(self.white_pawns)
+		self.all_pieces[0].append(self.white_rocks)
+		self.all_pieces[0].append(self.white_knights)
+		self.all_pieces[0].append(self.white_bishops)
+		self.all_pieces[0].append(self.white_queen)
+		self.all_pieces[0].append(self.white_king)
 
 		# ------ Black Pieces ------
 		self.black_pawns = [
@@ -50,17 +49,12 @@ class Game:
 		self.black_queen = [pi.Queen(self.set_pos(3,7), 'b')]
 		self.black_king = [pi.King(self.set_pos(4,7), 'b')]
 
-		self.all_black_pieces.append(self.black_pawns)
-		self.all_black_pieces.append(self.black_rocks)
-		self.all_black_pieces.append(self.black_knights)
-		self.all_black_pieces.append(self.black_bishops)
-		self.all_black_pieces.append(self.black_queen)
-		self.all_black_pieces.append(self.black_king)
-
-		# Complete list of every piece
-		self.all_pieces.append(self.all_white_pieces)
-		self.all_pieces.append(self.all_black_pieces)
-
+		self.all_pieces[1].append(self.black_pawns)
+		self.all_pieces[1].append(self.black_rocks)
+		self.all_pieces[1].append(self.black_knights)
+		self.all_pieces[1].append(self.black_bishops)
+		self.all_pieces[1].append(self.black_queen)
+		self.all_pieces[1].append(self.black_king)
 
 	def run(self):
 		running = True
@@ -79,7 +73,7 @@ class Game:
 								if piece.showing_moves:
 									for rect in piece.move_rects:
 										if rect.collidepoint(event.pos):
-											piece.move(self.all_white_pieces, self.all_black_pieces, rect.x, rect.y)
+											piece.move(self.all_pieces[0], self.all_pieces[1], rect.x, rect.y)
 
 								piece.showing_moves = False
 
@@ -107,7 +101,7 @@ class Game:
 		current_colour = True
 		for row in range(8):
 			for square in range(8):
-				pygame.draw.rect(self.screen, colour_dict[current_colour], ((50 + (square * 60)), 60 + (row * 60), 60, 60))
+				pygame.draw.rect(self.screen, colour_dict[current_colour], (square * 60, row * 60, 60, 60))
 				current_colour = not current_colour
 			current_colour = not current_colour
 
