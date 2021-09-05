@@ -99,23 +99,56 @@ class Pawn(Piece):
 		super().__init__(position, colour)
 		
 		# 3 Possible ways of movement (normal, start pos, beating enemy)
-		self.moves = [[],[]]
+		self.moves = [[],[],[],[]]
 
 		if colour == 'w':
 			self.moves[0].append((0,60))
 			self.moves[1].append((0,120))
+			self.moves[2].append((-60, 60))
+			self.moves[3].append((60, 60))
 		elif colour == 'b':
 			self.moves[0].append((0,-60))
 			self.moves[1].append((0,-120))
+			self.moves[2].append((-60, -60))
+			self.moves[3].append((60, -60))
 
 		self.textsurf = self.font.render('P', False, (0,179,255))
 
 	def update_moves(self, all_pieces):
 		super().update_moves(all_pieces)
 
-		if self.piece_rect.y != 75 and self.piece_rect.y != 375:
-			if pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30) in self.move_rects:
-				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30))
+		# Start Pos
+		if self.colour == 'w':
+			if self.piece_rect.y != 75:
+				if pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30) in self.move_rects:
+					self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30))
+		elif self.colour == 'b':
+			if self.piece_rect.y != 375:
+				if pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30) in self.move_rects:
+					self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30))
+
+		# Remove left if not in beat
+		if pygame.Rect(self.piece_rect.x + self.moves[2][0][0] - 10, self.piece_rect.y + self.moves[2][0][1] - 10, 50, 50) not in self.beat_rects:
+			if pygame.Rect(self.piece_rect.x + self.moves[2][0][0], self.piece_rect.y + self.moves[2][0][1], 30, 30) in self.move_rects:
+				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[2][0][0], self.piece_rect.y + self.moves[2][0][1], 30, 30))
+
+		# Remove right if not in beat
+		if pygame.Rect(self.piece_rect.x + self.moves[3][0][0] - 10, self.piece_rect.y + self.moves[3][0][1] - 10, 50, 50) not in self.beat_rects:
+			if pygame.Rect(self.piece_rect.x + self.moves[3][0][0], self.piece_rect.y + self.moves[3][0][1], 30, 30) in self.move_rects:
+				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[3][0][0], self.piece_rect.y + self.moves[3][0][1], 30, 30))
+
+		# Remove beat rect that is (0,2) away
+		if pygame.Rect(self.piece_rect.x + self.moves[1][0][0] - 10, self.piece_rect.y + self.moves[1][0][1] - 10, 50, 50) in self.beat_rects:
+			self.beat_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[1][0][0] - 10, self.piece_rect.y + self.moves[1][0][1] - 10, 50, 50))
+
+		# Remove forwards if forward beat exists
+		if pygame.Rect(self.piece_rect.x + self.moves[0][0][0] - 10, self.piece_rect.y + self.moves[0][0][1] - 10, 50, 50) in self.beat_rects:
+			if pygame.Rect(self.piece_rect.x + self.moves[0][0][0], self.piece_rect.y + self.moves[0][0][1], 30, 30) in self.move_rects:
+				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[0][0][0], self.piece_rect.y + self.moves[0][0][1], 30, 30))
+
+		# Remove forward beat
+		if pygame.Rect(self.piece_rect.x + self.moves[0][0][0] - 10, self.piece_rect.y + self.moves[0][0][1] - 10, 50, 50) in self.beat_rects:
+			self.beat_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[0][0][0] - 10, self.piece_rect.y + self.moves[0][0][1] - 10, 50, 50))
 
 class Rock(Piece):
 	def __init__(self, position, colour):
