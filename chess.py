@@ -11,6 +11,7 @@ class Game:
 		pygame.font.init()
 		pygame.display.set_caption('Chess')
 		self.screen = pygame.display.set_mode((800, 600))
+		self.surface_moves = pygame.Surface((800,600), pygame.SRCALPHA)
 		self.clock = pygame.time.Clock()
 
 		self.board_pos = [[(30 + (x * 60), 30 + (y * 60)) for x in range(8)] for y in range(8)]
@@ -73,7 +74,21 @@ class Game:
 								if piece.showing_moves:
 									for rect in piece.move_rects:
 										if rect.collidepoint(event.pos):
+											# Move piece
 											piece.move(self.all_pieces[0], self.all_pieces[1], rect.x, rect.y)
+
+											# Check for other piece
+											if piece.colour == 'w':
+												for other_type in self.all_pieces[1]:
+													for other_piece in other_type:
+														if piece.piece_rect.x == other_piece.piece_rect.x and piece.piece_rect.y == other_piece.piece_rect.y:
+															self.all_pieces[1][self.all_pieces[1].index(other_type)].remove(other_piece)
+											if piece.colour == 'b':
+												for other_type in self.all_pieces[0]:
+													for other_piece in other_type:
+														if piece.piece_rect.x == other_piece.piece_rect.x and piece.piece_rect.y == other_piece.piece_rect.y:
+																self.all_pieces[0][self.all_pieces[0].index(other_type)].remove(other_piece)
+
 
 								piece.showing_moves = False
 
@@ -83,11 +98,12 @@ class Game:
 									piece.showing_moves = True
 
 			# Drawing
+			self.surface_moves.fill((255,255,255,0))
 			self.draw_board()
 			for colou in self.all_pieces:
 				for typ in colou:
 					for piece in typ:
-						piece.draw(self.screen)
+						piece.draw(self.screen, self.surface_moves)
 
 			pygame.display.flip()
 			self.clock.tick(60)
