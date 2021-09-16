@@ -7,80 +7,119 @@ BLACK_PIECES = (192,192,192)
 class Piece:
 	def __init__(self, position, colour):
 		self.showing_moves = False
+		
+		# Teams
 		self.colour = colour
 		self.colour_rgb = WHITE_PIECES if self.colour == 'w' else BLACK_PIECES
 
+		# Different rectangles for moves etc.
 		self.piece_rect = pygame.Rect(position[0] - 15, position[1] - 15, 30, 30)
 		self.moves = []
 		self.move_rects = []
 		self.beat_rects = []
 
-		self.x_bound_left = 0
-		self.x_bound_right = 480
-		self.y_bound_top = 0
-		self.y_bound_bottom = 480
-
 		self.font = pygame.font.SysFont('Helvetica Neue', 15)
 
 	def update_moves(self, all_pieces):
+		
+		# Clear moves
 		self.move_rects = []
 		self.beat_rects = []
 
+		# Only append moves which are inside the board boundaries
 		for mov_type in self.moves:						
 			for mov in mov_type:
 
 				# Check for board boundaries
-				if self.x_bound_left < self.piece_rect.x + mov[0] < self.x_bound_right:
-					if self.y_bound_top < self.piece_rect.y + mov[1] < self.y_bound_bottom:
+				if 0 < self.piece_rect.x + mov[0] < 480:
+					if 0 < self.piece_rect.y + mov[1] < 480:
 						self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
 
+		# Remove blocked spaces
 		for mov_type in self.moves:
 			for mov in mov_type:
 				for team in all_pieces:
 					for type_of_piece in team:
 						for piece in type_of_piece:
 							
-							# Check for other pieces
-							if self.colour == 'w':
-								if piece.colour == 'w':
-									if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
-										if piece.piece_rect in self.move_rects:
-											self.move_rects.remove(piece.piece_rect)
-											self.remove_further_moves(mov)
-								if piece.colour == 'b':
-									if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
-										if piece.piece_rect in self.move_rects:
-											self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
-											self.beat_rects.append(pygame.Rect(self.piece_rect.x + mov[0] - 10, self.piece_rect.y + mov[1] - 10, 50, 50))
-											self.remove_further_moves(mov)
+							# Check for other pieces blocking the way
+							self.check_blocks(piece, mov)
 
-							if self.colour == 'b':
-								if piece.colour == 'b':
-									if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
-										if piece.piece_rect in self.move_rects:
-											self.move_rects.remove(piece.piece_rect)
-											self.remove_further_moves(mov)
-								if piece.colour == 'w':
-									if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
-										if piece.piece_rect in self.move_rects:
-											self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
-											self.beat_rects.append(pygame.Rect(self.piece_rect.x + mov[0] - 10, self.piece_rect.y + mov[1] - 10, 50, 50))
-											self.remove_further_moves(mov)
+	def check_blocks(self, piece, mov):
+		if self.colour == 'w':
+
+			# When other piece is whtie (same team) remove every further move and the move where piece is
+			if piece.colour == 'w':
+				if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
+					if piece.piece_rect in self.move_rects:
+						self.move_rects.remove(piece.piece_rect)
+						self.remove_further_moves(mov)
+
+			# When other piece is in opposing team, add option to defeat enemy piece
+			if piece.colour == 'b':
+				if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
+					if piece.piece_rect in self.move_rects:
+						self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
+						self.beat_rects.append(pygame.Rect(self.piece_rect.x + mov[0] - 10, self.piece_rect.y + mov[1] - 10, 50, 50))
+						self.remove_further_moves(mov)
+
+		if self.colour == 'b':
+
+			# When other piece is black (same team) remove every further move and the move where piece is
+			if piece.colour == 'b':
+				if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
+					if piece.piece_rect in self.move_rects:
+						self.move_rects.remove(piece.piece_rect)
+						self.remove_further_moves(mov)
+
+			# When other piece is in opposing team, add option to defeat enemy piece
+			if piece.colour == 'w':
+				if self.piece_rect.x + mov[0] == piece.piece_rect.x and self.piece_rect.y + mov[1] == piece.piece_rect.y:
+					if piece.piece_rect in self.move_rects:
+						self.move_rects.append(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
+						self.beat_rects.append(pygame.Rect(self.piece_rect.x + mov[0] - 10, self.piece_rect.y + mov[1] - 10, 50, 50))
+						self.remove_further_moves(mov)
 
 	def remove_further_moves(self, move):
 		to_delete_moves = []
+
+		# Check which move type to truncate
 		for mov_type in self.moves:
 			if move in mov_type:
-				index = mov_type.index(move)
-				to_delete_moves = mov_type[index:]
 
+				# truncate move type based on position of block
+				to_delete_moves = mov_type[mov_type.index(move):]
+
+		# Delete further moves
 		for mov in to_delete_moves:
 			if pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30) in self.move_rects:
 				self.move_rects.remove(pygame.Rect(self.piece_rect.x + mov[0], self.piece_rect.y + mov[1], 30, 30))
 
-	def move(self, all_white, all_black, to_x, to_y):	
+	def move(self, all_pieces, to_x, to_y):	
 		self.piece_rect.x = to_x
 		self.piece_rect.y = to_y
+
+		self.defeat_piece(all_pieces)
+
+	def defeat_piece(self, all_pieces):
+		
+		# Check for other piece
+		if self.colour == 'w':
+			for other_type in all_pieces[1]:
+				for other_piece in other_type:
+					
+					# Remove piece if it collides with moved piece
+					if self.piece_rect.x == other_piece.piece_rect.x and self.piece_rect.y == other_piece.piece_rect.y:
+						all_pieces[1][all_pieces[1].index(other_type)].remove(other_piece)
+		
+		if self.colour == 'b':
+			for other_type in all_pieces[0]:
+				for other_piece in other_type:
+					
+					# Remove piece if it collides with moved piece
+					if self.piece_rect.x == other_piece.piece_rect.x and self.piece_rect.y == other_piece.piece_rect.y:
+						all_pieces[0][all_pieces[0].index(other_type)].remove(other_piece)
+
 		
 	def draw(self, screen, surface_moves):
 		pygame.draw.rect(screen, self.colour_rgb, self.piece_rect)
@@ -98,9 +137,10 @@ class Pawn(Piece):
 	def __init__(self, position, colour):
 		super().__init__(position, colour)
 		
-		# 3 Possible ways of movement (normal, start pos, beating enemy)
+		# 4 Possible ways of movement (normal, start pos, 2 * beating enemy)
 		self.moves = [[],[],[],[]]
 
+		# Adding possible moves
 		if colour == 'w':
 			self.moves[0].append((0,60))
 			self.moves[1].append((0,120))
@@ -117,7 +157,7 @@ class Pawn(Piece):
 	def update_moves(self, all_pieces):
 		super().update_moves(all_pieces)
 
-		# Start Pos
+		# Remove start position move when not on start position
 		if self.colour == 'w':
 			if self.piece_rect.y != 75:
 				if pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30) in self.move_rects:
@@ -127,26 +167,26 @@ class Pawn(Piece):
 				if pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30) in self.move_rects:
 					self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[1][0][0], self.piece_rect.y + self.moves[1][0][1], 30, 30))
 
-		# Remove left if not in beat
+		# Remove left-defeat if there doesnt exist an opponent
 		if pygame.Rect(self.piece_rect.x + self.moves[2][0][0] - 10, self.piece_rect.y + self.moves[2][0][1] - 10, 50, 50) not in self.beat_rects:
 			if pygame.Rect(self.piece_rect.x + self.moves[2][0][0], self.piece_rect.y + self.moves[2][0][1], 30, 30) in self.move_rects:
 				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[2][0][0], self.piece_rect.y + self.moves[2][0][1], 30, 30))
 
-		# Remove right if not in beat
+		# Remove right-defeat if there doesnt exist an opponent
 		if pygame.Rect(self.piece_rect.x + self.moves[3][0][0] - 10, self.piece_rect.y + self.moves[3][0][1] - 10, 50, 50) not in self.beat_rects:
 			if pygame.Rect(self.piece_rect.x + self.moves[3][0][0], self.piece_rect.y + self.moves[3][0][1], 30, 30) in self.move_rects:
 				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[3][0][0], self.piece_rect.y + self.moves[3][0][1], 30, 30))
 
-		# Remove beat rect that is (0,2) away
+		# Remove defeat rect that is (0,2) away
 		if pygame.Rect(self.piece_rect.x + self.moves[1][0][0] - 10, self.piece_rect.y + self.moves[1][0][1] - 10, 50, 50) in self.beat_rects:
 			self.beat_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[1][0][0] - 10, self.piece_rect.y + self.moves[1][0][1] - 10, 50, 50))
 
-		# Remove forwards if forward beat exists
+		# Remove forwards move if there is an opponent in front
 		if pygame.Rect(self.piece_rect.x + self.moves[0][0][0] - 10, self.piece_rect.y + self.moves[0][0][1] - 10, 50, 50) in self.beat_rects:
 			if pygame.Rect(self.piece_rect.x + self.moves[0][0][0], self.piece_rect.y + self.moves[0][0][1], 30, 30) in self.move_rects:
 				self.move_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[0][0][0], self.piece_rect.y + self.moves[0][0][1], 30, 30))
 
-		# Remove forward beat
+		# Remove forward defeat if there is an opponent in front
 		if pygame.Rect(self.piece_rect.x + self.moves[0][0][0] - 10, self.piece_rect.y + self.moves[0][0][1] - 10, 50, 50) in self.beat_rects:
 			self.beat_rects.remove(pygame.Rect(self.piece_rect.x + self.moves[0][0][0] - 10, self.piece_rect.y + self.moves[0][0][1] - 10, 50, 50))
 
@@ -154,10 +194,8 @@ class Rock(Piece):
 	def __init__(self, position, colour):
 		super().__init__(position, colour)
 
-		# 4 Possible ways of movement
-		self.moves = [
-				[],[],[],[]
-			]
+		# 4 Possible types of movement
+		self.moves = [[],[],[],[]]
 
 		for i in range(7):
 			self.moves[0].append((60 * (i+1), 0))
@@ -171,10 +209,8 @@ class Knight(Piece):
 	def __init__(self, position, colour):
 		super().__init__(position, colour)
 
-		# 8 Possible ways of movement
-		self.moves = [
-				[],[],[],[],[],[],[],[]
-			]
+		# 8 Possible types of movement
+		self.moves = [[],[],[],[],[],[],[],[]]
 
 		self.moves[0].append((60, -120))
 		self.moves[1].append((120, -60))
@@ -192,10 +228,8 @@ class Bishop(Piece):
 	def __init__(self, position, colour):
 		super().__init__(position, colour)
 
-		# 4 Possible movements
-		self.moves = [
-				[],[],[],[]
-			]
+		# 4 Possible types of movement
+		self.moves = [[],[],[],[]]
 
 		for i in range(7):
 			self.moves[0].append((60*(i+1),60*(i+1)))
@@ -211,9 +245,7 @@ class Queen(Piece):
 		self.textsurf = self.font.render('Q', False, (0,179,255))
 
 		# 8 Possible types of movement
-		self.moves = [
-				[],[],[],[],[],[],[],[]
-			]
+		self.moves = [[],[],[],[],[],[],[],[]]
 
 		for i in range(7):
 			self.moves[0].append((60*(i+1),-60*(i+1)))
@@ -232,9 +264,7 @@ class King(Piece):
 		super().__init__(position, colour)
 
 		# 8 Possible types of movement
-		self.moves = [
-				[],[],[],[],[],[],[],[]
-			]
+		self.moves = [[],[],[],[],[],[],[],[]]
 
 		self.moves[0].append((60,0))
 		self.moves[1].append((-60,0))
