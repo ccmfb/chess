@@ -1,5 +1,6 @@
 import pygame
-import operator
+import settings
+import event_handler
 import pieces as pi
 
 BOARD_DARK = (127, 85, 57)
@@ -10,6 +11,8 @@ class Game:
 		pygame.init()
 		pygame.font.init()
 		pygame.display.set_caption('Chess')
+		settings.init()
+
 		self.screen = pygame.display.set_mode((800, 600))
 		self.surface_moves = pygame.Surface((800,600), pygame.SRCALPHA)
 		self.clock = pygame.time.Clock()
@@ -17,89 +20,42 @@ class Game:
 		self.board_pos = [[(30 + (x * 60), 30 + (y * 60)) for x in range(8)] for y in range(8)]
 
 		self.create_pieces()
+		self.event_handler = event_handler.Event_Handler()
 
+	# Could go into settings
 	def create_pieces(self):
 		
 		# General List     W   B
 		self.all_pieces = [[],[]]
 
 		# ------ White Pieces ------
-		self.white_pawns = [
-			pi.Pawn(self.set_pos(x, 1), 'w') for x in range(8)
-			]
-		self.white_rocks = [pi.Rock(self.set_pos(0, 0), 'w'), pi.Rock(self.set_pos(7,0), 'w')]
-		self.white_knights = [pi.Knight(self.set_pos(1,0), 'w'), pi.Knight(self.set_pos(6,0), 'w')]
-		self.white_bishops = [pi.Bishop(self.set_pos(2,0), 'w'), pi.Bishop(self.set_pos(5,0), 'w')]
-		self.white_queen = [pi.Queen(self.set_pos(3,0), 'w')]
-		self.white_king = [pi.King(self.set_pos(4,0), 'w')]
-
-		self.all_pieces[0].append(self.white_pawns)
-		self.all_pieces[0].append(self.white_rocks)
-		self.all_pieces[0].append(self.white_knights)
-		self.all_pieces[0].append(self.white_bishops)
-		self.all_pieces[0].append(self.white_queen)
-		self.all_pieces[0].append(self.white_king)
+		self.all_pieces[0].append([pi.Pawn(self.set_pos(x, 1), 'w') for x in range(8)])
+		self.all_pieces[0].append([pi.Rock(self.set_pos(0, 0), 'w'), pi.Rock(self.set_pos(7,0), 'w')])
+		self.all_pieces[0].append([pi.Knight(self.set_pos(1,0), 'w'), pi.Knight(self.set_pos(6,0), 'w')])
+		self.all_pieces[0].append([pi.Bishop(self.set_pos(2,0), 'w'), pi.Bishop(self.set_pos(5,0), 'w')])
+		self.all_pieces[0].append([pi.Queen(self.set_pos(3,0), 'w')])
+		self.all_pieces[0].append([pi.King(self.set_pos(4,0), 'w')])
 
 		# ------ Black Pieces ------
-		self.black_pawns = [
-			pi.Pawn(self.set_pos(x, 6), 'b') for x in range(8)
-			]
-		self.black_rocks = [pi.Rock(self.set_pos(0,7), 'b'), pi.Rock(self.set_pos(7,7), 'b')]
-		self.black_knights = [pi.Knight(self.set_pos(1,7), 'b'), pi.Knight(self.set_pos(6,7), 'b')]
-		self.black_bishops = [pi.Bishop(self.set_pos(2,7), 'b'), pi.Bishop(self.set_pos(5,7), 'b')]
-		self.black_queen = [pi.Queen(self.set_pos(3,7), 'b')]
-		self.black_king = [pi.King(self.set_pos(4,7), 'b')]
-
-		self.all_pieces[1].append(self.black_pawns)
-		self.all_pieces[1].append(self.black_rocks)
-		self.all_pieces[1].append(self.black_knights)
-		self.all_pieces[1].append(self.black_bishops)
-		self.all_pieces[1].append(self.black_queen)
-		self.all_pieces[1].append(self.black_king)
+		self.all_pieces[1].append([pi.Pawn(self.set_pos(x, 6), 'b') for x in range(8)])
+		self.all_pieces[1].append([pi.Rock(self.set_pos(0,7), 'b'), pi.Rock(self.set_pos(7,7), 'b')])
+		self.all_pieces[1].append([pi.Knight(self.set_pos(1,7), 'b'), pi.Knight(self.set_pos(6,7), 'b')])
+		self.all_pieces[1].append([pi.Bishop(self.set_pos(2,7), 'b'), pi.Bishop(self.set_pos(5,7), 'b')])
+		self.all_pieces[1].append([pi.Queen(self.set_pos(3,7), 'b')])
+		self.all_pieces[1].append([pi.King(self.set_pos(4,7), 'b')])
 
 	def run(self):
-		running = True
 
-		while running:
-			for event in pygame.event.get():
-				# QUIT
-				if event.type == pygame.QUIT:
-					running = False
+		# Game loop
+		while settings.running:
+			
+			# Check for events
+			self.event_handler.check_events(self.all_pieces)
 
-				# Piece Interactions
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					for colou in self.all_pieces:
-						for typ in colou:	
-							for piece in typ:
-								if piece.showing_moves:
-									for rect in piece.move_rects:
-										if rect.collidepoint(event.pos):
-											# Move piece
-											piece.move(self.all_pieces[0], self.all_pieces[1], rect.x, rect.y)
-
-											# Check for other piece
-											if piece.colour == 'w':
-												for other_type in self.all_pieces[1]:
-													for other_piece in other_type:
-														if piece.piece_rect.x == other_piece.piece_rect.x and piece.piece_rect.y == other_piece.piece_rect.y:
-															self.all_pieces[1][self.all_pieces[1].index(other_type)].remove(other_piece)
-											if piece.colour == 'b':
-												for other_type in self.all_pieces[0]:
-													for other_piece in other_type:
-														if piece.piece_rect.x == other_piece.piece_rect.x and piece.piece_rect.y == other_piece.piece_rect.y:
-																self.all_pieces[0][self.all_pieces[0].index(other_type)].remove(other_piece)
-
-
-								piece.showing_moves = False
-
-								# Showing possible moves
-								if piece.piece_rect.collidepoint(event.pos):
-									piece.update_moves(self.all_pieces)
-									piece.showing_moves = True
-
-			# Drawing
+			# Draw
 			self.surface_moves.fill((255,255,255,0))
 			self.draw_board()
+
 			for colou in self.all_pieces:
 				for typ in colou:
 					for piece in typ:
@@ -108,6 +64,7 @@ class Game:
 			pygame.display.flip()
 			self.clock.tick(60)
 
+		# When loop is ended quit pygame
 		pygame.quit()
 
 	def draw_board(self):
